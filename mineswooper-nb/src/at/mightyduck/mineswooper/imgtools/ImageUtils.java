@@ -8,6 +8,8 @@ package at.mightyduck.mineswooper.imgtools;
 import java.awt.geom.AffineTransform;
 import java.awt.image.AffineTransformOp;
 import java.awt.image.BufferedImage;
+import java.awt.image.Kernel;
+import javafx.scene.effect.GaussianBlur;
 
 /**
  *
@@ -25,5 +27,9 @@ public class ImageUtils {
         t.scale(fx, fy);
         AffineTransformOp op = new AffineTransformOp(t, AffineTransformOp.TYPE_BILINEAR);
         return op.filter(source, target);
+    }
+    
+    public static BufferedImage applyGaussianFilter(BufferedImage source, BufferedImage target ) {
+        throw new UnsupportedOperationException("Not supported yet.");
     }
 }
