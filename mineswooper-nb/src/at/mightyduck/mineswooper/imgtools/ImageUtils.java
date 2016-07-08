@@ -8,8 +8,6 @@ package at.mightyduck.mineswooper.imgtools;
 import java.awt.geom.AffineTransform;
 import java.awt.image.AffineTransformOp;
 import java.awt.image.BufferedImage;
-import java.awt.image.Kernel;
-import javafx.scene.effect.GaussianBlur;
 
 /**
  *

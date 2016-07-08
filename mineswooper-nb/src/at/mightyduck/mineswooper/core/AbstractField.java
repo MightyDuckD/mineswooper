@@ -3,11 +3,8 @@
  * To change this template file, choose Tools | Templates
  * and open the template in the editor.
  */
-
 package at.mightyduck.mineswooper.core;
 
-import java.awt.AWTException;
-import java.awt.Robot;
 import java.util.Arrays;
 import java.util.function.BiConsumer;
 import java.util.function.BiFunction;
@@ -97,6 +94,18 @@ public abstract class AbstractField {
                 }
             }
         }
+    }
+
+    @Override
+    public String toString() {
+        StringBuilder builder = new StringBuilder();
+        for (int x = 0; x < width; x++) {
+            for (int y = 0; y < height; y++) {
+                builder.append(get(x, y));
+            }
+            builder.append(System.lineSeparator());
+        }
+        return builder.toString();
     }
 
 }
