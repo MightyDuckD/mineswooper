@@ -23,6 +23,8 @@ public abstract class AbstractField {
     public final int height;
 
     public AbstractField(int width, int height) {
+        if(width < 1 || height < 1)
+            throw new IllegalArgumentException("width and height have to be at least 1");
         this.width = width;
         this.height = height;
     }

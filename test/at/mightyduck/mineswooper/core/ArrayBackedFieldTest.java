@@ -16,6 +16,11 @@ public class ArrayBackedFieldTest {
 
     public ArrayBackedFieldTest() {
     }
+    
+    @Test(expected = IllegalArgumentException.class)
+    public void testIllegalSize() {
+        ArrayBackedField field = new ArrayBackedField(-1, 100);
+    }
 
     @Test
     public void testSizeConstructor() {
