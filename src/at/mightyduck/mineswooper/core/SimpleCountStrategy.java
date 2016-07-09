@@ -5,7 +5,7 @@
  */
 package at.mightyduck.mineswooper.core;
 
-import at.mightyduck.mineswooper.Point2D;
+import at.mightyduck.mineswooper.util.Point2D;
 import java.util.HashSet;
 import java.util.Set;
 

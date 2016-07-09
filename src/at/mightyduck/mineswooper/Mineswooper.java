@@ -5,6 +5,8 @@
  */
 package at.mightyduck.mineswooper;
 
+import java.io.IOException;
+
 /**
  *
  * @author Simon
@@ -14,10 +16,7 @@ public class Mineswooper {
     /**
      * @param args the command line arguments
      */
-    public static void main(String[] args) {
-        
-        
-        
+    public static void main(String[] args) throws IOException {
         
     }
     

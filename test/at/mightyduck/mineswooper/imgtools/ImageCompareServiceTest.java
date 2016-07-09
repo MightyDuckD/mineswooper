@@ -5,6 +5,7 @@
  */
 package at.mightyduck.mineswooper.imgtools;
 
+import at.mightyduck.mineswooper.util.ImageCompareService;
 import java.awt.Color;
 import java.awt.image.BufferedImage;
 import org.junit.Test;

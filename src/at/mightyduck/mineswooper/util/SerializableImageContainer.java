@@ -3,7 +3,7 @@
  * To change this template file, choose Tools | Templates
  * and open the template in the editor.
  */
-package at.mightyduck.mineswooper;
+package at.mightyduck.mineswooper.util;
 
 import java.awt.image.BufferedImage;
 import java.io.ByteArrayInputStream;
