@@ -23,7 +23,7 @@ public class SimpleCountStrategyTest {
 
     @Test
     public void testCase1() throws Exception {
-        ArrayBackedField field = new ArrayBackedField(
+        ReadOnlyArrayBackedField field = new ReadOnlyArrayBackedField(
                 new char[][]{
                     " 101 ".toCharArray(),
                     "   0 ".toCharArray(),

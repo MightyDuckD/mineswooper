@@ -6,32 +6,21 @@
 package at.mightyduck.mineswooper.app;
 
 import at.mightyduck.mineswooper.util.Point2D;
-import at.mightyduck.mineswooper.util.Point2D;
 import at.mightyduck.mineswooper.util.ImageCompareService;
-import at.mightyduck.mineswooper.util.ImageCompareService;
-import at.mightyduck.mineswooper.util.ImageUtils;
 import at.mightyduck.mineswooper.util.ImageUtils;
 import java.awt.BorderLayout;
 import java.awt.Color;
 import java.awt.Graphics;
 import java.awt.image.BufferedImage;
-import java.awt.image.BufferedImageOp;
-import java.awt.image.ConvolveOp;
-import java.awt.image.Kernel;
 import java.io.File;
-import java.io.FileInputStream;
 import java.io.IOException;
 import java.util.HashMap;
 import java.util.Map;
-import java.util.logging.Level;
-import java.util.logging.Logger;
 import javax.imageio.ImageIO;
 import javax.swing.JFrame;
 import javax.swing.JPanel;
 import javax.swing.JSlider;
-import javax.swing.JSpinner;
 import javax.swing.event.ChangeEvent;
-import javax.swing.event.ChangeListener;
 
 /**
  *
@@ -39,11 +28,11 @@ import javax.swing.event.ChangeListener;
  */
 public class ImageComparisonTest {
 
-    public void main() throws IOException {
+    public static void main(String args[]) throws IOException {
 
         Map<String, BufferedImage> database = new HashMap<>();
 
-        for (File file : new File("./res/imagecomparisontest/").listFiles()) {
+        for (File file : new File("./res/test/").listFiles()) {
             BufferedImage img = ImageIO.read(file);
             img = ImageUtils.scaleToSize(16, 16, img, null);
             img = ImageUtils.applyGaussianFilter(img, null);
@@ -86,6 +75,7 @@ public class ImageComparisonTest {
         slider.addChangeListener((ChangeEvent e) -> {
             panel.repaint();
             binding[0] = slider.getValue();
+            System.out.println("value " + binding[0]);
         });
         
         JFrame jFrame = new JFrame();

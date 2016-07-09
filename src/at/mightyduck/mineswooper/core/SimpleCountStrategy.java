@@ -29,6 +29,8 @@ public class SimpleCountStrategy implements Strategy {
                 int totalCount = field.asCount(x, y);
                 int bombsCount = field.countNeighbors(x, y, field::isBomb);
                 int unknownCount = field.countNeighbors(x, y, field::isUnkown);
+                if(x == 1)
+                    System.out.println(y +" count " + bombsCount + "  " + unknownCount + "  " +totalCount);
                 if (bombsCount + unknownCount == totalCount) {
                     field.forEachNeighbor(x, y, field::isUnkown, (bombX,bombY) -> bombs.add(new Point2D(bombX,bombY)));
                 }

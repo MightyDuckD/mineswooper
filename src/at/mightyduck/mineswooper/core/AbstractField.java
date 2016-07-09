@@ -23,8 +23,9 @@ public abstract class AbstractField {
     public final int height;
 
     public AbstractField(int width, int height) {
-        if(width < 1 || height < 1)
+        if (width < 1 || height < 1) {
             throw new IllegalArgumentException("width and height have to be at least 1");
+        }
         this.width = width;
         this.height = height;
     }
@@ -101,8 +102,8 @@ public abstract class AbstractField {
     @Override
     public String toString() {
         StringBuilder builder = new StringBuilder();
-        for (int x = 0; x < width; x++) {
-            for (int y = 0; y < height; y++) {
+        for (int y = 0; y < height; y++) {
+            for (int x = 0; x < width; x++) {
                 builder.append(get(x, y));
             }
             builder.append(System.lineSeparator());

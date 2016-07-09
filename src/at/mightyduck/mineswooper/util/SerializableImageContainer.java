@@ -24,6 +24,10 @@ public class SerializableImageContainer implements Serializable {
 
     private transient BufferedImage img;
 
+    public SerializableImageContainer(BufferedImage img) {
+        this.img = img;
+    }
+
     private void writeObject(ObjectOutputStream out) throws IOException {
         out.defaultWriteObject();
         ByteArrayOutputStream bout = new ByteArrayOutputStream();
@@ -41,5 +45,11 @@ public class SerializableImageContainer implements Serializable {
         ByteArrayInputStream bin = new ByteArrayInputStream(array);
         img = ImageIO.read(bin);
     }
+
+    public BufferedImage getImg() {
+        return img;
+    }
+
+    
 
 }

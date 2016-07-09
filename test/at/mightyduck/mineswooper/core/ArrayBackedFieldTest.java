@@ -19,12 +19,12 @@ public class ArrayBackedFieldTest {
     
     @Test(expected = IllegalArgumentException.class)
     public void testIllegalSize() {
-        ArrayBackedField field = new ArrayBackedField(-1, 100);
+        ReadOnlyArrayBackedField field = new ReadOnlyArrayBackedField(-1, 100);
     }
 
     @Test
     public void testSizeConstructor() {
-        ArrayBackedField field = new ArrayBackedField(10, 15);
+        ReadOnlyArrayBackedField field = new ReadOnlyArrayBackedField(10, 15);
         assertEquals(10, field.getWidth());
         assertEquals(15, field.getHeight());
         assertEquals(AbstractField.STONE_UNKOWN, field.get(4, 11));
@@ -32,7 +32,7 @@ public class ArrayBackedFieldTest {
 
     @Test
     public void testArrayConstructor() {
-        ArrayBackedField field = new ArrayBackedField(
+        ReadOnlyArrayBackedField field = new ReadOnlyArrayBackedField(
                 new char[][]{
                     "   A".toCharArray(),// <- x=0
                     " B  ".toCharArray(),//    x=1
