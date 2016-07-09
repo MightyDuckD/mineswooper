@@ -34,7 +34,7 @@ public class ImageCompareService {
                 amount += distance(a.getRGB(x, y), b.getRGB(x, y));
             }
         }
-        return 1 - (amount / (255.0 * width * height)) ;
+        return 1 - (amount / (width * height)) ;
     }
 
     private static double distance(int rgb0, int rgb1) {
@@ -44,7 +44,7 @@ public class ImageCompareService {
         double dr = Math.abs(a.getRed() - b.getRed()) / 255.0;
         double dg = Math.abs(a.getGreen() - b.getGreen()) / 255.0;
         double db = Math.abs(a.getBlue() - b.getBlue()) / 255.0;
-        return Math.abs(dr * dr + dg * dg + db * db);
+        return Math.sqrt(dr * dr + dg * dg + db * db);
     }
     
     private static boolean notSameSize(BufferedImage a, BufferedImage b) {
