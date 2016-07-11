@@ -10,16 +10,21 @@ import at.mightyduck.mineswooper.core.CachedField;
 import at.mightyduck.mineswooper.core.SimpleCountStrategy;
 import at.mightyduck.mineswooper.core.Strategy;
 import at.mightyduck.mineswooper.core.StrategyResult;
+import at.mightyduck.mineswooper.util.ContextPickerJFrame;
 import at.mightyduck.mineswooper.util.ImageCompareService;
 import at.mightyduck.mineswooper.util.ImageUtils;
 import at.mightyduck.mineswooper.util.Point2D;
 import at.mightyduck.mineswooper.util.SerializableImageContainer;
 import java.awt.AWTException;
+import java.awt.Color;
 import java.awt.MouseInfo;
 import java.awt.Point;
 import java.awt.Rectangle;
 import java.awt.Robot;
 import java.awt.event.InputEvent;
+import java.awt.event.WindowAdapter;
+import java.awt.event.WindowEvent;
+import java.awt.event.WindowListener;
 import java.awt.image.BufferedImage;
 import java.io.FileInputStream;
 import java.io.FileOutputStream;
@@ -36,7 +41,10 @@ import java.util.logging.Level;
 import java.util.logging.Logger;
 import javax.swing.Icon;
 import javax.swing.ImageIcon;
+import javax.swing.JFrame;
 import javax.swing.JOptionPane;
+import javax.swing.JRootPane;
+import javax.swing.SwingUtilities;
 
 /**
  *
@@ -46,28 +54,69 @@ public class Mineswooper {
 
     public static class Context {
 
-        int offx, offy, sx, sy, bx, by;
+        int offx, offy, sx, sy, bx, by, fieldWidth, fieldHeight;
 
         public Context(int offx, int offy, int sx, int sy) {
             this(offx, offy, sx, sy, 0, 0);
         }
 
         public Context(int offx, int offy, int sx, int sy, int bx, int by) {
+            this(offx, offy, sx, sy, bx, by, 30, 16);
+        }
+
+        public Context(int offx, int offy, int sx, int sy, int bx, int by, int fieldWidth, int fieldHeight) {
             this.offx = offx;
             this.offy = offy;
             this.sx = sx;
             this.sy = sy;
             this.bx = bx;
             this.by = by;
+            this.fieldWidth = fieldWidth;
+            this.fieldHeight = fieldHeight;
+        }
+
+        public int getFieldHeight() {
+            return fieldHeight;
+        }
+
+        public int getFieldWidth() {
+            return fieldWidth;
+        }
+
+        @Override
+        public String toString() {
+            return "Context{" + "offx=" + offx + ", offy=" + offy + ", sx=" + sx + ", sy=" + sy + ", bx=" + bx + ", by=" + by + '}';
         }
 
         private Rectangle get(int x, int y) {
             return new Rectangle(offx + x * (sx + bx), offy + y * (sy + by), sx, sy);
         }
 
+        public static Context loadFromJFrame() {
+            Object lock = new Object();
+            ContextPickerJFrame frame = new ContextPickerJFrame();
+            frame.addWindowListener(new WindowAdapter() {
+                @Override
+                public void windowClosing(WindowEvent e) {
+                    synchronized (lock) {
+                        lock.notify();
+                        System.out.println("lock notify");
+                    }
+                }
+            });
+            frame.setVisible(true);
+            synchronized (lock) {
+                try {
+                    lock.wait();
+                } catch (InterruptedException ex) {
+                    Logger.getLogger(Mineswooper.class.getName()).log(Level.SEVERE, null, ex);
+                }
+            }
+            return new Context(frame.getOffX(), frame.getOffY(), frame.getSX(), frame.getSY(), frame.getBX(), frame.getBY(), frame.getFieldWidth(), frame.getFieldHeight());
+        }
     }
 
-    public static class Database implements Serializable{
+    public static class Database implements Serializable {
 
         private Map<Character, List<SerializableImageContainer>> data = new HashMap<>();
         private transient ImageCompareService service;
@@ -77,8 +126,9 @@ public class Mineswooper {
         }
 
         private char get(BufferedImage capture) {
-            if(service == null)
+            if (service == null) {
                 service = new ImageCompareService();
+            }
             capture = ImageUtils.scaleToSize(16, 16, capture, null);
             capture = ImageUtils.applyGaussianFilter(capture, null);
             Character result = null;
@@ -128,22 +178,18 @@ public class Mineswooper {
      * @param args the command line arguments
      */
     public static void main(String[] args) throws IOException, Exception {
-        int width = 16;
-        int height = 30;
-        Context context = loadContext();
+        Context context = Context.loadFromJFrame();
+        int width = context.getFieldWidth();
+        int height = context.getFieldHeight();
+        if (true) {
+            //throw new RuntimeException("do not run without setup.");
+        }
         Database database = loadDatabase();
         CachedField field = new CachedField(new AbstractField(width, height) {
-
             @Override
             public char get(int x, int y) {
                 try {
-//                    System.out.println("context " + context.get(x, y));
                     BufferedImage img = new Robot().createScreenCapture(context.get(x, y));
-//                    try {
-//                        ImageIO.write(img, "png", new File(String.format("./res/test/out.x%03d.y%03d.png", x,y)));
-//                    } catch (IOException ex) {
-//                        Logger.getLogger(Mineswooper.class.getName()).log(Level.SEVERE, null, ex);
-//                    }
                     return database.get(img);
                 } catch (AWTException ex) {
                     Logger.getLogger(Mineswooper.class.getName()).log(Level.SEVERE, null, ex);
