@@ -131,15 +131,14 @@ public class Mineswooper {
             Character result = null;
             double matchresult = 0;
             for (Entry<Character, List<SerializableImageContainer>> entry : data.entrySet()) {
-                double match = 0;
                 for (SerializableImageContainer img : entry.getValue()) {
-                    match += service.compare(capture, img.getImg());
+                    double match = service.compare(capture, img.getImg());
+                    if (matchresult < match) {
+                        matchresult = match;
+                        result = entry.getKey();
+                    }
                 }
-                match /= entry.getValue().size();
-                if (matchresult < match) {
-                    matchresult = match;
-                    result = entry.getKey();
-                }
+
 //                System.out.println("match " + match);
             }
             if (matchresult > tresh) {
@@ -241,11 +240,9 @@ public class Mineswooper {
         ObjectOutputStream out = new ObjectOutputStream(new FileOutputStream("database.obj"));
         out.writeObject(database);
         out.close();
-        
-        
-        
+
         System.out.println("done - shutting down now");
-        
+
     }
 
     private static Context loadContext() {
