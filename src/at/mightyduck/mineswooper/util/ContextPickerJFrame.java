@@ -49,8 +49,7 @@ public class ContextPickerJFrame extends JFrame {
 
     @Override
     public void paint(Graphics g) {
-        super.paint(g);
-
+        g.clearRect(0, 0, getWidth(), getHeight());
         g.setColor(Color.RED);
         for (int x = 0; x < getFieldWidth(); x++) {
             for (int y = 0; y < getFieldHeight(); y++) {

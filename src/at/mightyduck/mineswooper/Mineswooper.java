@@ -16,7 +16,6 @@ import at.mightyduck.mineswooper.util.ImageUtils;
 import at.mightyduck.mineswooper.util.Point2D;
 import at.mightyduck.mineswooper.util.SerializableImageContainer;
 import java.awt.AWTException;
-import java.awt.Color;
 import java.awt.MouseInfo;
 import java.awt.Point;
 import java.awt.Rectangle;
@@ -24,7 +23,6 @@ import java.awt.Robot;
 import java.awt.event.InputEvent;
 import java.awt.event.WindowAdapter;
 import java.awt.event.WindowEvent;
-import java.awt.event.WindowListener;
 import java.awt.image.BufferedImage;
 import java.io.FileInputStream;
 import java.io.FileOutputStream;
@@ -43,8 +41,6 @@ import javax.swing.Icon;
 import javax.swing.ImageIcon;
 import javax.swing.JFrame;
 import javax.swing.JOptionPane;
-import javax.swing.JRootPane;
-import javax.swing.SwingUtilities;
 
 /**
  *
@@ -95,6 +91,7 @@ public class Mineswooper {
         public static Context loadFromJFrame() {
             Object lock = new Object();
             ContextPickerJFrame frame = new ContextPickerJFrame();
+            frame.setDefaultCloseOperation(JFrame.DISPOSE_ON_CLOSE);
             frame.addWindowListener(new WindowAdapter() {
                 @Override
                 public void windowClosing(WindowEvent e) {
@@ -244,6 +241,11 @@ public class Mineswooper {
         ObjectOutputStream out = new ObjectOutputStream(new FileOutputStream("database.obj"));
         out.writeObject(database);
         out.close();
+        
+        
+        
+        System.out.println("done - shutting down now");
+        
     }
 
     private static Context loadContext() {
