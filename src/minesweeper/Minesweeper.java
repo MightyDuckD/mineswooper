@@ -17,6 +17,8 @@ import java.util.Arrays;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.function.BiConsumer;
+import java.util.function.BiFunction;
+import java.util.function.Consumer;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import javafx.scene.image.PixelFormat;
@@ -46,16 +48,128 @@ public class Minesweeper {
     private static final char FLAG = 'X';
     private static final char UNKOWN = ' ';
 
-    private static Cell field[][];
-    private static boolean bombs[][];
-    private static boolean gameOver;
+    private static class GameState {
+
+        private final int width;
+        private final int height;
+        private Cell field[][];
+        private boolean bombs[][];
+        private boolean gameOver;
+
+        private GameState(int width, int height) {
+            this.width = width;
+            this.height = height;
+            this.field = new Cell[width][height];
+            this.bombs = new boolean[width][height];
+            this.gameOver = false;
+        }
+
+        public boolean invalid(int x, int y) {
+            return x < 0 || y < 0 || x >= getWidth() || y >= getHeight();
+        }
+
+        public boolean valid(int x, int y) {
+            return !invalid(x, y);
+        }
+
+        public boolean isBomb(int x, int y) {
+            if (invalid(x, y)) {
+                return false;
+            }
+            return bombs[x][y];
+        }
+
+        public int count(int x, int y) {
+            int cnt = 0;
+            for (int i = -1; i < 2; i++) {
+                for (int j = -1; j < 2; j++) {
+                    if (i != 0 || j != 0) {
+                        cnt += isBomb(x + i, y + j) ? 1 : 0;
+                    }
+                }
+            }
+            return cnt;
+        }
+
+        public synchronized void mark(int x, int y) {
+            int val = field[x][y].getValue();
+            if (val == UNKOWN) {
+                field[x][y].setValue(FLAG);
+            }
+            if (val == FLAG) {
+                field[x][y].setValue(QUESTIONMARK[0]);
+            }
+            if (val == QUESTIONMARK[0]) {
+                field[x][y].setValue(UNKOWN);
+            }
+        }
+
+        public synchronized void open(int x, int y) {
+            if (gameOver) {
+                return;
+            }
+            if (field[x][y].getValue() == UNKOWN) {
+                if (bombs[x][y]) {
+                    gameOver = true;
+                }
+                unlock(x, y);
+            }
+        }
+
+        public void unlock(int x, int y) {
+            if (bombs[x][y]) {
+                field[x][y].setValue(BOMBS[0]);
+            } else if (field[x][y].getValue() == UNKOWN) {
+                unlock(x, y, new boolean[getWidth()][getHeight()]);
+            }
+        }
+
+        public void unlock(int x, int y, boolean visited[][]) {
+            if (invalid(x, y)) {
+                return;
+            }
+            int cnt = count(x, y);
+            field[x][y].setValue(NUMBERS[cnt]);
+            if (count(x, y) == 0 && !visited[x][y]) {
+                visited[x][y] = true;
+                for (int i = -1; i < 2; i++) {
+                    for (int j = -1; j < 2; j++) {
+                        unlock(x + i, y + j, visited);
+
+                    }
+                }
+            }
+        }
+
+        public int getWidth() {
+            return width;
+        }
+
+        public int getHeight() {
+            return height;
+        }
+
+        public static GameState createNewField(int width, int height, Consumer<JLabel> view, BiFunction<Integer, Integer, Boolean> isbomb) {
+            GameState state = new GameState(width, height);
+            for (int y = 0; y < height; y++) {
+                for (int x = 0; x < width; x++) {
+                    view.accept(state.field[x][y] = new Cell(x, y));
+                    state.bombs[x][y] = isbomb.apply(x, y);
+                    state.field[x][y].setRightClickHook(state::mark);
+                    state.field[x][y].setLeftClickHook(state::open);
+                }
+            }
+            return state;
+        }
+
+        public static GameState createNewField(int width, int height, Consumer<JLabel> view) {
+            return createNewField(width, height, view, (x, y) -> Math.random() < 0.01);
+        }
+    }
 
     public static void main(String[] args) {
-
         JPanel field = initGame(30, 16);
-
-        JFrame frame = new JFrame("Minesweeper - Simon Lehner-D") {
-        };
+        JFrame frame = new JFrame("Minesweeper - Simon Lehner-D.");
         frame.setSize(800, 600);
         frame.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
         frame.setResizable(true);
@@ -64,176 +178,81 @@ public class Minesweeper {
         frame.setVisible(true);
     }
 
-    private static int getWidth() {
-        return field.length;
-    }
-
-    private static int getHeight() {
-        return field[0].length;
-    }
-
-    private static boolean invalid(int x, int y) {
-        return x < 0 || y < 0 || x >= getWidth() || y >= getHeight();
-    }
-
-    private static boolean valid(int x, int y) {
-        return !invalid(x, y);
-    }
-
-    private static boolean isBomb(int x, int y) {
-        if (invalid(x, y)) {
-            return false;
-        }
-        return bombs[x][y];
-    }
-
-    private static int count(int x, int y) {
-        int cnt = 0;
-        for (int i = -1; i < 2; i++) {
-            for (int j = -1; j < 2; j++) {
-                if (i != 0 || j != 0) {
-                    cnt += isBomb(x + i, y + j) ? 1 : 0;
-                }
-            }
-        }
-        return cnt;
-    }
-
-    private static synchronized void mark(int x, int y) {
-        int val = field[x][y].getValue();
-        if (val == UNKOWN) {
-            field[x][y].setValue(FLAG);
-        }
-        if (val == FLAG) {
-            field[x][y].setValue(QUESTIONMARK[0]);
-        }
-        if (val == QUESTIONMARK[0]) {
-            field[x][y].setValue(UNKOWN);
-        }
-    }
-
-
-
-private static synchronized void open(int x, int y) {
-        if (gameOver) {
-            return;
-        }
-
-        if (field[x][y].getValue() == UNKOWN) {
-            if (bombs[x][y]) {
-                gameOver = true;
-            }
-            unlock(x, y);
-        }
-    }
-
     private static JPanel initGame(int width, int height) {
-        System.out.println("generating field " + width + " " + height);
         Dimension dim = new Dimension(width * 16, height * 16);
+
         JPanel panel = new JPanel(new GridLayout(height, width, 0, 0));
         panel.setBackground(Color.red);
         panel.setMaximumSize(dim);
         panel.setSize(dim);
-        field = new Cell[width][height];
-        bombs = new boolean[width][height];
-        gameOver = false;
-        for (int y = 0; y < height; y++) {
-            for (int x = 0; x < width; x++) {
-                panel.add(field[x][y] = new Cell(x, y));
-                bombs[x][y] = Math.random() < 0.01;
-                field[x][y].setRightClickHook(Minesweeper::mark);
-                field[x][y].setLeftClickHook(Minesweeper::open);
-            }
-        }
+
+        GameState.createNewField(width, height, panel::add);
+
         JPanel container = new JPanel();
         container.setSize(800, 500);
         container.add(panel);
         return container;
     }
 
-    private static void unlock(int x, int y) {
-        System.out.println("unlock at " + x + "  " + y);
-        if (bombs[x][y]) {
-            field[x][y].setValue(BOMBS[0]);
-        } else if (field[x][y].getValue() == UNKOWN) {
-            unlock(x, y, new boolean[getWidth()][getHeight()]);
-        }
-    }
-
-    private static void unlock(int x, int y, boolean visited[][]) {
-        if (invalid(x, y)) {
-            return;
-        }
-        System.out.println("   -> " + x + " " + y);
-        int cnt = count(x, y);
-        field[x][y].setValue(NUMBERS[cnt]);
-        if (count(x, y) == 0 && !visited[x][y]) {
-            visited[x][y] = true;
-            for (int i = -1; i < 2; i++) {
-                for (int j = -1; j < 2; j++) {
-                    unlock(x + i, y + j, visited);
-                
-
-}
-            }
-        }
-    }
-
+    /**
+     * TODO: maybe separate the view from the model so that saving the instance
+     * state gets easier.
+     */
     private static final class Cell extends JLabel {
 
-    private int x, y;
-    private char value;
-    private BiConsumer<Integer, Integer> leftClickHook, rightClickHook;
+        private int x, y;
+        private char value;
+        private BiConsumer<Integer, Integer> leftClickHook, rightClickHook;
 
-    public Cell(int x, int y) {
-        this(x, y, UNKOWN);
-    }
+        public Cell(int x, int y) {
+            this(x, y, UNKOWN);
+        }
 
-    public Cell(int x, int y, char value) {
-        this.x = x;
-        this.y = y;
-        this.setValue(value);
-        this.addMouseListener(new MouseAdapter() {
-            @Override
-            public void mouseClicked(MouseEvent e) {
-                switch (e.getButton()) {
-                    case MouseEvent.BUTTON3:
-                        if (rightClickHook != null) {
-                            rightClickHook.accept(x, y);
-                        }
-                        break;
-                    case MouseEvent.BUTTON1:
-                        if (leftClickHook != null) {
-                            leftClickHook.accept(x, y);
-                        }
-                        break;
+        public Cell(int x, int y, char value) {
+            this.x = x;
+            this.y = y;
+            this.setValue(value);
+            this.addMouseListener(new MouseAdapter() {
+                @Override
+                public void mouseClicked(MouseEvent e) {
+                    switch (e.getButton()) {
+                        case MouseEvent.BUTTON3:
+                            if (rightClickHook != null) {
+                                rightClickHook.accept(x, y);
+                            }
+                            break;
+                        case MouseEvent.BUTTON1:
+                            if (leftClickHook != null) {
+                                leftClickHook.accept(x, y);
+                            }
+                            break;
+                    }
                 }
-            }
-        });
+            });
+        }
+
+        public void setRightClickHook(BiConsumer<Integer, Integer> rightClickHook) {
+            this.rightClickHook = rightClickHook;
+        }
+
+        public void setLeftClickHook(BiConsumer<Integer, Integer> leftClickHook) {
+            this.leftClickHook = leftClickHook;
+        }
+
+        public char getValue() {
+            return this.value;
+        }
+
+        public void setValue(char value) {
+            Icon me = Minesweeper.getIcon(value);
+            this.value = value;
+            this.setIcon(me);
+            this.setSize(me.getIconWidth(), me.getIconHeight());
+        }
+
     }
 
-    public void setRightClickHook(BiConsumer<Integer, Integer> rightClickHook) {
-        this.rightClickHook = rightClickHook;
-    }
-
-    public void setLeftClickHook(BiConsumer<Integer, Integer> leftClickHook) {
-        this.leftClickHook = leftClickHook;
-    }
-
-    public char getValue() {
-        return this.value;
-    }
-
-    public void setValue(char value) {
-        Icon me = Minesweeper.getIcon(value);
-        this.value = value;
-        this.setIcon(me);
-        this.setSize(me.getIconWidth(), me.getIconHeight());
-    }
-
-}
-
-public static Icon getIcon(char value) {
+    public static Icon getIcon(char value) {
         return icons.computeIfAbsent(value, Minesweeper::loadIcon);
     }
 
@@ -253,26 +272,21 @@ public static Icon getIcon(char value) {
                 rect.x, rect.y,
                 rect.width, rect.height
         ));
-    
 
-}
+    }
 
     private static BufferedImage getSprite() {
         if (sprite == null) {
             try {
-                sprite = ImageIO.read(Minesweeper.class  
-
-.getResourceAsStream("res/sprites.png"));
-            } 
-
-catch (IOException ex) {
-                Logger.getLogger(Minesweeper.class  
-
-    .getName()).log(Level.SEVERE, null, ex);
+                sprite = ImageIO.read(Minesweeper.class
+                        .getResourceAsStream("res/sprites.png"));
+            } catch (IOException ex) {
+                Logger.getLogger(Minesweeper.class
+                        .getName()).log(Level.SEVERE, null, ex);
                 //denullify it to prevent it from reloading the same missing resource over and over again.
-                sprite  = new BufferedImage(1, 1, BufferedImage.TYPE_INT_ARGB);
-}
-}
+                sprite = new BufferedImage(1, 1, BufferedImage.TYPE_INT_ARGB);
+            }
+        }
         return sprite;
     }
 
@@ -280,36 +294,26 @@ catch (IOException ex) {
         if (bounding == null) {
             try {
                 bounding = new HashMap<>();
-                BufferedReader 
-
-reader = new BufferedReader(new InputStreamReader(Minesweeper.class  
-
-    .getResourceAsStream("res/sprites.config")));
+                BufferedReader reader = new BufferedReader(new InputStreamReader(Minesweeper.class
+                        .getResourceAsStream("res/sprites.config")));
                 String line = null;
-    while ((line  = reader.readLine()
-
-    
-        ) != null) {
+                while ((line = reader.readLine()) != null) {
                     if (line.startsWith("#")) {
-            continue;
-        }
-        String data[] = line.substring(2).split(" ");
-        System.out.println(line.charAt(0) + " " + Arrays.toString(data));
-        bounding.put(line.charAt(0),
-                new Rectangle(
-                        Integer.parseInt(data[0]),
-                        Integer.parseInt(data[1]),
-                        Integer.parseInt(data[2]),
-                        Integer.parseInt(data[3])
-                ));
-    }
-}
-
-
-catch (ArrayIndexOutOfBoundsException | NumberFormatException | IOException ex) {
-                Logger.getLogger(Minesweeper.class  
-
-.getName()).log(Level.SEVERE, "sprites.config is corrupt or missing", ex);
+                        continue;
+                    }
+                    String data[] = line.substring(2).split(" ");
+                    System.out.println(line.charAt(0) + " " + Arrays.toString(data));
+                    bounding.put(line.charAt(0),
+                            new Rectangle(
+                                    Integer.parseInt(data[0]),
+                                    Integer.parseInt(data[1]),
+                                    Integer.parseInt(data[2]),
+                                    Integer.parseInt(data[3])
+                            ));
+                }
+            } catch (ArrayIndexOutOfBoundsException | NumberFormatException | IOException ex) {
+                Logger.getLogger(Minesweeper.class
+                        .getName()).log(Level.SEVERE, "sprites.config is corrupt or missing", ex);
             }
         }
         return bounding;
