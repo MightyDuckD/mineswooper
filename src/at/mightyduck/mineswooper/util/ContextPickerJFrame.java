@@ -9,16 +9,18 @@ import java.awt.AlphaComposite;
 import java.awt.Color;
 import java.awt.Graphics;
 import java.awt.Graphics2D;
-import java.awt.HeadlessException;
 import java.awt.Point;
-import java.awt.event.ComponentAdapter;
-import java.awt.event.ComponentEvent;
-import java.awt.event.WindowAdapter;
+import java.awt.RenderingHints;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 import javax.swing.JFrame;
 import javax.swing.JPanel;
 import javax.swing.JRootPane;
 import javax.swing.JTextField;
 import javax.swing.SwingUtilities;
+import javax.swing.UIManager;
+import javax.swing.UIManager.LookAndFeelInfo;
+import javax.swing.UnsupportedLookAndFeelException;
 
 /**
  * TODO: find out why the transparent background isn't cleared on repaint.
@@ -37,7 +39,6 @@ public class ContextPickerJFrame extends JFrame {
         super("Context Picker");
         this.setSize(800, 600);
         this.setUndecorated(true);
-//        this.setOpacity((float) 0.5);
         this.getRootPane().setWindowDecorationStyle(JRootPane.FRAME);
         sx = new JTextField("16");
         sy = new JTextField("16");
@@ -46,9 +47,8 @@ public class ContextPickerJFrame extends JFrame {
         width = new JTextField("30");
         height = new JTextField("16");
         this.setBackground(new Color(0, 0, 0, 0));
-        this.getContentPane().setBackground(new Color(0, 0, 0, 0));
         this.add(panel = new JPanelImpl());
-        panel.setBackground(new Color(0, 0, 0, 0));
+        this.panel.setBackground(new Color(0, 0, 0, 12));
         for (JTextField t : new JTextField[]{sx, sy, bx, by, width, height}) {
             t.addActionListener((e) -> this.repaint());
         }
@@ -64,8 +64,6 @@ public class ContextPickerJFrame extends JFrame {
 
     @Override
     public void paint(Graphics g) {
-        this.remove(panel);
-        this.add(panel = new JPanelImpl());
         super.paint(g); //To change body of generated methods, choose Tools | Templates.
     }
 
@@ -109,6 +107,7 @@ public class ContextPickerJFrame extends JFrame {
         ContextPickerJFrame frame = new ContextPickerJFrame();
         frame.setDefaultCloseOperation(EXIT_ON_CLOSE);
         frame.setVisible(true);
+
     }
 
     private class JPanelImpl extends JPanel {
@@ -117,14 +116,14 @@ public class ContextPickerJFrame extends JFrame {
         }
 
         @Override
-        public void paint(Graphics g) {
-            super.paint(g);
-//            Graphics2D d = (Graphics2D) g.create();
-//            AlphaComposite co = AlphaComposite.getInstance(AlphaComposite.SRC);
-//            d.setComposite(co);
-//            d.setColor(T);
-//            d.create().clearRect(0, 0, getWidth(), getHeight());
-//            d.fillRect(0, 0, getWidth(), getHeight());
+        protected void paintComponent(Graphics g) {
+            super.paintComponent(g);
+            Graphics2D d = (Graphics2D) g.create();
+
+            d.setComposite(AlphaComposite.Clear);
+            d.setColor(Color.black);
+            d.fillRect(0, 0, getWidth(), getHeight());
+            d.setComposite(AlphaComposite.SrcOver);
 
             g.setColor(Color.RED);
             for (int x = 0; x < getFieldWidth(); x++) {
@@ -137,12 +136,17 @@ public class ContextPickerJFrame extends JFrame {
         }
     }
 
+    @Override
+    public void paintAll(Graphics g) {
+        super.paintAll(g);
+    }
+
     public int[] getAll() {
         return new int[]{
-            getOffX(),getOffY(),
-            getSX(),getSY(),
-            getBX(),getBY(),
-            getFieldWidth(),getFieldHeight()
+            getOffX(), getOffY(),
+            getSX(), getSY(),
+            getBX(), getBY(),
+            getFieldWidth(), getFieldHeight()
         };
     }
 }

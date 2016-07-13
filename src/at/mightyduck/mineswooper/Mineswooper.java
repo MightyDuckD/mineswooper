@@ -50,7 +50,7 @@ import javax.swing.JOptionPane;
  */
 public class Mineswooper {
 
-    public static class Context {
+    private static class Context {
 
         private int offx, offy, sx, sy, bx, by, fieldWidth, fieldHeight;
 
@@ -94,7 +94,7 @@ public class Mineswooper {
             return new Rectangle(offx + x * (sx + bx), offy + y * (sy + by), sx, sy);
         }
 
-        public static Context loadFromJFrame() {
+        private static Context loadContext() {
             Object lock = new Object();
             ContextPickerJFrame frame = new ContextPickerJFrame();
             frame.setDefaultCloseOperation(JFrame.DISPOSE_ON_CLOSE);
@@ -103,7 +103,6 @@ public class Mineswooper {
                 public void windowClosed(WindowEvent e) {
                     synchronized (lock) {
                         lock.notify();
-                        System.out.println("lock notify");
                     }
                 }
             });
@@ -120,11 +119,12 @@ public class Mineswooper {
 
     }
 
-    public static class Database implements Serializable {
+    private static class Database implements Serializable {
 
         private Map<Character, List<SerializableImageContainer>> data = new HashMap<>();
         private transient ImageCompareService service;
         private double tresh = 0.95;
+        private int basesize = 16;
 
         public Database() {
         }
@@ -133,7 +133,7 @@ public class Mineswooper {
             if (service == null) {
                 service = new ImageCompareService();
             }
-            capture = ImageUtils.scaleToSize(16, 16, capture, null);
+            capture = ImageUtils.scaleToSize(basesize, basesize, capture, null);
             capture = ImageUtils.applyGaussianFilter(capture, null);
             Character result = null;
             double matchresult = 0;
@@ -145,8 +145,6 @@ public class Mineswooper {
                         result = entry.getKey();
                     }
                 }
-
-//                System.out.println("match " + match);
             }
             if (matchresult > tresh) {
                 return result;
@@ -173,15 +171,27 @@ public class Mineswooper {
         }
     }
 
-    public static void move(Robot bot, Rectangle rect) {
+    private static void move(Robot bot, Rectangle rect) {
         bot.mouseMove((int) rect.getCenterX(), (int) rect.getCenterY());
     }
 
+    private static Database loadDatabase() {
+        try {
+
+            ObjectInputStream in = new ObjectInputStream(new FileInputStream("database.obj"));
+            Database base = (Database) in.readObject();
+            in.close();
+            return base;
+        } catch (Exception ex) {
+            System.out.println(ex);
+        }
+        return new Database();
+    }
     /**
      * @param args the command line arguments
      */
     public static void main(String[] args) throws IOException, Exception {
-        Context context = Context.loadFromJFrame();
+        Context context = Context.loadContext();
         int width = context.getFieldWidth();
         int height = context.getFieldHeight();
         System.out.println(context);
@@ -253,21 +263,5 @@ public class Mineswooper {
 
     }
 
-    private static Context loadContext() {
-        return new Context(1471, 162, 20, 20, 5, 5);
-    }
-
-    private static Database loadDatabase() {
-        try {
-
-            ObjectInputStream in = new ObjectInputStream(new FileInputStream("database.obj"));
-            Database base = (Database) in.readObject();
-            in.close();
-            return base;
-        } catch (Exception ex) {
-            System.out.println(ex);
-        }
-        return new Database();
-    }
 
 }
