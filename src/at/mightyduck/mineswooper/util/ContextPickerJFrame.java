@@ -10,6 +10,7 @@ import java.awt.Color;
 import java.awt.Graphics;
 import java.awt.Graphics2D;
 import java.awt.HeadlessException;
+import java.awt.Point;
 import java.awt.event.ComponentAdapter;
 import java.awt.event.ComponentEvent;
 import java.awt.event.WindowAdapter;
@@ -69,13 +70,15 @@ public class ContextPickerJFrame extends JFrame {
     }
 
     public int getOffX() {
-        System.out.printf("%d %d %d\n", getX(), panel.getX(), offx);
-        return getX() + panel.getX() + offx;
+        Point p = new Point(offx, offy);
+        SwingUtilities.convertPointToScreen(p, panel);
+        return p.x;
     }
 
     public int getOffY() {
-        System.out.printf("%d %d %d\n", getY(), panel.getY(), offy);
-        return getY() + panel.getY() + offy;
+        Point p = new Point(offx, offy);
+        SwingUtilities.convertPointToScreen(p, panel);
+        return p.y;
     }
 
     public int getSX() {
@@ -106,8 +109,6 @@ public class ContextPickerJFrame extends JFrame {
         ContextPickerJFrame frame = new ContextPickerJFrame();
         frame.setDefaultCloseOperation(EXIT_ON_CLOSE);
         frame.setVisible(true);
-        System.out.println(frame.getOffX());
-        System.out.println(frame.getOffY());
     }
 
     private class JPanelImpl extends JPanel {
@@ -118,13 +119,12 @@ public class ContextPickerJFrame extends JFrame {
         @Override
         public void paint(Graphics g) {
             super.paint(g);
-            Graphics2D d = (Graphics2D) g.create();
-
-            AlphaComposite co = AlphaComposite.getInstance(AlphaComposite.SRC);
-            d.setComposite(co);
-            d.setColor(T);
-            d.create().clearRect(0, 0, getWidth(), getHeight());
-            d.fillRect(0, 0, getWidth(), getHeight());
+//            Graphics2D d = (Graphics2D) g.create();
+//            AlphaComposite co = AlphaComposite.getInstance(AlphaComposite.SRC);
+//            d.setComposite(co);
+//            d.setColor(T);
+//            d.create().clearRect(0, 0, getWidth(), getHeight());
+//            d.fillRect(0, 0, getWidth(), getHeight());
 
             g.setColor(Color.RED);
             for (int x = 0; x < getFieldWidth(); x++) {
