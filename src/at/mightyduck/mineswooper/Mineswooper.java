@@ -37,8 +37,6 @@ import java.util.Map;
 import java.util.Map.Entry;
 import java.util.logging.Level;
 import java.util.logging.Logger;
-import javafx.beans.InvalidationListener;
-import javafx.beans.Observable;
 import javax.swing.Icon;
 import javax.swing.ImageIcon;
 import javax.swing.JFrame;
@@ -119,57 +117,6 @@ public class Mineswooper {
 
     }
 
-    private static class Database implements Serializable {
-
-        private Map<Character, List<SerializableImageContainer>> data = new HashMap<>();
-        private transient ImageCompareService service;
-        private double tresh = 0.95;
-        private int basesize = 16;
-
-        public Database() {
-        }
-
-        private char get(BufferedImage capture) {
-            if (service == null) {
-                service = new ImageCompareService();
-            }
-            capture = ImageUtils.scaleToSize(basesize, basesize, capture, null);
-            capture = ImageUtils.applyGaussianFilter(capture, null);
-            Character result = null;
-            double matchresult = 0;
-            for (Entry<Character, List<SerializableImageContainer>> entry : data.entrySet()) {
-                for (SerializableImageContainer img : entry.getValue()) {
-                    double match = service.compare(capture, img.getImg());
-                    if (matchresult < match) {
-                        matchresult = match;
-                        result = entry.getKey();
-                    }
-                }
-            }
-            if (matchresult > tresh) {
-                return result;
-            }
-            char ch = ask(capture);
-            List<SerializableImageContainer> list = data.get(ch);
-            if (list == null) {
-                list = new ArrayList<>();
-            }
-            list.add(new SerializableImageContainer(capture));
-            data.put(ch, list);
-            return ch;
-        }
-
-        private char ask(BufferedImage capture) {
-            Icon icon = new ImageIcon(capture);
-            String res = (String) JOptionPane.showInputDialog(
-                    null,
-                    "Hello world",
-                    "Hello", JOptionPane.INFORMATION_MESSAGE,
-                    icon,
-                    null, "");
-            return res.isEmpty() ? AbstractField.STONE_UNKOWN : res.charAt(0);
-        }
-    }
 
     private static void move(Robot bot, Rectangle rect) {
         bot.mouseMove((int) rect.getCenterX(), (int) rect.getCenterY());
@@ -187,9 +134,7 @@ public class Mineswooper {
         }
         return new Database();
     }
-    /**
-     * @param args the command line arguments
-     */
+    
     public static void main(String[] args) throws IOException, Exception {
         Context context = Context.loadContext();
         int width = context.getFieldWidth();
@@ -204,7 +149,7 @@ public class Mineswooper {
             public char get(int x, int y) {
                 try {
                     BufferedImage img = new Robot().createScreenCapture(context.get(x, y));
-                    return database.get(img);
+                    return database.search(img);
                 } catch (AWTException ex) {
                     Logger.getLogger(Mineswooper.class.getName()).log(Level.SEVERE, null, ex);
                 }
@@ -262,6 +207,4 @@ public class Mineswooper {
         System.out.println("done - shutting down now");
 
     }
-
-
 }
