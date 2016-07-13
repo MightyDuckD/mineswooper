@@ -186,7 +186,11 @@ public class Minesweeper {
         panel.setMaximumSize(dim);
         panel.setSize(dim);
 
-        GameState.createNewField(width, height, panel::add);
+        GameState.createNewField(width, height, panel::add, 
+                (x,y) -> {
+                    return Math.random() < 0.1;
+                }
+        );
 
         JPanel container = new JPanel();
         container.setSize(800, 500);

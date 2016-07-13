@@ -37,6 +37,8 @@ import java.util.Map;
 import java.util.Map.Entry;
 import java.util.logging.Level;
 import java.util.logging.Logger;
+import javafx.beans.InvalidationListener;
+import javafx.beans.Observable;
 import javax.swing.Icon;
 import javax.swing.ImageIcon;
 import javax.swing.JFrame;
@@ -50,7 +52,7 @@ public class Mineswooper {
 
     public static class Context {
 
-        int offx, offy, sx, sy, bx, by, fieldWidth, fieldHeight;
+        private int offx, offy, sx, sy, bx, by, fieldWidth, fieldHeight;
 
         public Context(int offx, int offy, int sx, int sy) {
             this(offx, offy, sx, sy, 0, 0);
@@ -58,6 +60,10 @@ public class Mineswooper {
 
         public Context(int offx, int offy, int sx, int sy, int bx, int by) {
             this(offx, offy, sx, sy, bx, by, 30, 16);
+        }
+        
+        public Context(int data[]) {
+            this(data[0],data[1],data[2],data[3],data[4],data[5],data[6],data[7]);
         }
 
         public Context(int offx, int offy, int sx, int sy, int bx, int by, int fieldWidth, int fieldHeight) {
@@ -94,7 +100,7 @@ public class Mineswooper {
             frame.setDefaultCloseOperation(JFrame.DISPOSE_ON_CLOSE);
             frame.addWindowListener(new WindowAdapter() {
                 @Override
-                public void windowClosing(WindowEvent e) {
+                public void windowClosed(WindowEvent e) {
                     synchronized (lock) {
                         lock.notify();
                         System.out.println("lock notify");
@@ -109,8 +115,9 @@ public class Mineswooper {
                     Logger.getLogger(Mineswooper.class.getName()).log(Level.SEVERE, null, ex);
                 }
             }
-            return new Context(frame.getOffX(), frame.getOffY(), frame.getSX(), frame.getSY(), frame.getBX(), frame.getBY(), frame.getFieldWidth(), frame.getFieldHeight());
+            return new Context(frame.getAll());
         }
+
     }
 
     public static class Database implements Serializable {
@@ -177,6 +184,7 @@ public class Mineswooper {
         Context context = Context.loadFromJFrame();
         int width = context.getFieldWidth();
         int height = context.getFieldHeight();
+        System.out.println(context);
         if (true) {
             //throw new RuntimeException("do not run without setup.");
         }

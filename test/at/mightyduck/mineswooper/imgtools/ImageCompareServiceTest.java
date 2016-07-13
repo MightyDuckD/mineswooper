@@ -30,7 +30,7 @@ public class ImageCompareServiceTest {
 
     @Test
     public void testSomeMethod() {
-        double DELTA = 0.0002;
+        double DELTA = 0.3;
 
         ImageCompareService s = new ImageCompareService();
         BufferedImage black0 = new BufferedImage(4, 4, BufferedImage.TYPE_INT_ARGB);
@@ -40,9 +40,9 @@ public class ImageCompareServiceTest {
             white0.setRGB(i / 4, i % 4, Color.WHITE.getRGB());
         }
 
-        assertEquals("the same imgage should be 100% similar", 1, s.compare(black0, black0), DELTA);
-        assertEquals("two black images should be 100% similar", 1, s.compare(black0, black1), DELTA);
-        assertEquals("a black and a white images should be 0% similar", 0, s.compare(black1, white0), DELTA);
+        assertEquals("the same imgage should be nearly 100% similar", 1, s.compare(black0, black0), DELTA);
+        assertEquals("two black images should be nearly 100% similar", 1, s.compare(black0, black1), DELTA);
+        assertEquals("a black and a white images should be nearly 0% similar", 0, s.compare(black1, white0), DELTA);
 
         //color one pixel of the 16 black again
         white0.setRGB(0, 0, Color.BLACK.getRGB());

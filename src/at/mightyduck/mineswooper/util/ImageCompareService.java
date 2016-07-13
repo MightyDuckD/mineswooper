@@ -14,11 +14,6 @@ import java.awt.image.BufferedImage;
  */
 public class ImageCompareService {
 
-    private static final int BASE_SIZE = 64;
-
-    private BufferedImage img0 = new BufferedImage(BASE_SIZE, BASE_SIZE, BufferedImage.TYPE_INT_RGB);
-    private BufferedImage img1 = new BufferedImage(BASE_SIZE, BASE_SIZE, BufferedImage.TYPE_INT_RGB);
-
     public ImageCompareService() {
     }
 
