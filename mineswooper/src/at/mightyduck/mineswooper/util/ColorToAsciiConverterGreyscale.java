@@ -15,6 +15,7 @@ import java.util.function.Function;
  * linear onto the charmap. e.g.: if the charmap = "abcd" then a = [0-0.25], b =
  * ]0.25-0.50], ...
  *
+ * @see ImageUtils
  * @author simon
  */
 public class ColorToAsciiConverterGreyscale implements Function<Color, Character> {
@@ -38,7 +39,7 @@ public class ColorToAsciiConverterGreyscale implements Function<Color, Character
 
     @Override
     public Character apply(Color color) {
-        double lumInv = 1 - (0.30 * color.getRed() + 0.59 * color.getGreen() + 0.11 * color.getBlue()) / 255.0;
+        double lumInv = 1 - ImageUtils.toLuminance(color);
         for (int i = 0; i < charmap.length; i++) {
             double lower = ((i + 0.0) / charmap.length);
             double upper = ((i + 1.0) / charmap.length);
