@@ -47,9 +47,9 @@ public class Mineswooper {
         public Context(int offx, int offy, int sx, int sy, int bx, int by) {
             this(offx, offy, sx, sy, bx, by, 30, 16);
         }
-        
+
         public Context(int data[]) {
-            this(data[0],data[1],data[2],data[3],data[4],data[5],data[6],data[7]);
+            this(data[0], data[1], data[2], data[3], data[4], data[5], data[6], data[7]);
         }
 
         public Context(int offx, int offy, int sx, int sy, int bx, int by, int fieldWidth, int fieldHeight) {
@@ -105,32 +105,23 @@ public class Mineswooper {
 
     }
 
-
     private static void move(Robot bot, Rectangle rect) {
         bot.mouseMove((int) rect.getCenterX(), (int) rect.getCenterY());
     }
 
     private static Database loadDatabase() {
-        try {
-
-            ObjectInputStream in = new ObjectInputStream(new FileInputStream("database.obj"));
-            Database base = (Database) in.readObject();
-            in.close();
-            return base;
-        } catch (Exception ex) {
+        try (ObjectInputStream in = new ObjectInputStream(new FileInputStream("database.obj"))) {
+            return (Database) in.readObject();
+        } catch (IOException | ClassNotFoundException ex) {
             System.out.println(ex);
         }
         return new Database();
     }
-    
+
     public static void main(String[] args) throws IOException, Exception {
         Context context = Context.loadContext();
         int width = context.getFieldWidth();
         int height = context.getFieldHeight();
-        System.out.println(context);
-        if (true) {
-            //throw new RuntimeException("do not run without setup.");
-        }
         Database database = loadDatabase();
         CachedField field = new CachedField(new AbstractField(width, height) {
             @Override
