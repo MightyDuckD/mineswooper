@@ -3,9 +3,7 @@ package minesweeper;
 import java.awt.BorderLayout;
 import java.awt.Color;
 import java.awt.Dimension;
-import java.awt.Graphics;
 import java.awt.GridLayout;
-import java.awt.Image;
 import java.awt.Rectangle;
 import java.awt.event.MouseAdapter;
 import java.awt.event.MouseEvent;
@@ -21,7 +19,6 @@ import java.util.function.BiFunction;
 import java.util.function.Consumer;
 import java.util.logging.Level;
 import java.util.logging.Logger;
-import javafx.scene.image.PixelFormat;
 import javax.imageio.ImageIO;
 import javax.swing.Icon;
 import javax.swing.ImageIcon;
@@ -50,19 +47,29 @@ public class Minesweeper {
 
     private static class GameState {
 
+
+        public static enum State {
+
+            RUNNING, LOST, WON
+        }
+
         private final int width;
         private final int height;
-        private Cell field[][];
         private boolean bombs[][];
-        private boolean gameOver;
+        private Cell field[][];
+        private State state;
+        private int markedCount;
+        private int openedCount;
 
         private GameState(int width, int height) {
             this.width = width;
             this.height = height;
             this.field = new Cell[width][height];
             this.bombs = new boolean[width][height];
-            this.gameOver = false;
+            this.state = State.RUNNING;
+            this.markedCount = this.openedCount = 0;
         }
+        
 
         public boolean invalid(int x, int y) {
             return x < 0 || y < 0 || x >= getWidth() || y >= getHeight();
@@ -91,32 +98,42 @@ public class Minesweeper {
             return cnt;
         }
 
+        
+        private void testIfFinished() {
+            if(this.openedCount + this.markedCount == this.width * this.height)
+                this.state = State.WON;
+        }
+        
         public synchronized void mark(int x, int y) {
             int val = field[x][y].getValue();
             if (val == UNKOWN) {
                 field[x][y].setValue(FLAG);
+                markedCount++;
             }
             if (val == FLAG) {
+                markedCount--;
                 field[x][y].setValue(QUESTIONMARK[0]);
             }
             if (val == QUESTIONMARK[0]) {
                 field[x][y].setValue(UNKOWN);
             }
+            testIfFinished();
         }
 
         public synchronized void open(int x, int y) {
-            if (gameOver) {
+            if (state != State.RUNNING) {
                 return;
             }
             if (field[x][y].getValue() == UNKOWN) {
                 if (bombs[x][y]) {
-                    gameOver = true;
+                    state = State.LOST;
                 }
                 unlock(x, y);
             }
+            testIfFinished();
         }
 
-        public void unlock(int x, int y) {
+        private void unlock(int x, int y) {
             if (bombs[x][y]) {
                 field[x][y].setValue(BOMBS[0]);
             } else if (field[x][y].getValue() == UNKOWN) {
@@ -124,18 +141,20 @@ public class Minesweeper {
             }
         }
 
-        public void unlock(int x, int y, boolean visited[][]) {
-            if (invalid(x, y)) {
+        private void unlock(int x, int y, boolean visited[][]) {
+            if (invalid(x, y) || visited[x][y]) {
                 return;
             }
+            visited[x][y] = true;
             int cnt = count(x, y);
+            if (field[x][y].getValue() == UNKOWN) {
+                openedCount++;
+            }
             field[x][y].setValue(NUMBERS[cnt]);
-            if (count(x, y) == 0 && !visited[x][y]) {
-                visited[x][y] = true;
+            if (count(x, y) == 0) {
                 for (int i = -1; i < 2; i++) {
                     for (int j = -1; j < 2; j++) {
                         unlock(x + i, y + j, visited);
-
                     }
                 }
             }
@@ -186,8 +205,8 @@ public class Minesweeper {
         panel.setMaximumSize(dim);
         panel.setSize(dim);
 
-        GameState.createNewField(width, height, panel::add, 
-                (x,y) -> {
+        GameState.createNewField(width, height, panel::add,
+                (x, y) -> {
                     return Math.random() < 0.1;
                 }
         );
