@@ -11,10 +11,7 @@ import at.mightyduck.mineswooper.core.SimpleCountStrategy;
 import at.mightyduck.mineswooper.core.Strategy;
 import at.mightyduck.mineswooper.core.StrategyResult;
 import at.mightyduck.mineswooper.util.ContextPickerJFrame;
-import at.mightyduck.mineswooper.util.ImageCompareService;
-import at.mightyduck.mineswooper.util.ImageUtils;
 import at.mightyduck.mineswooper.util.Point2D;
-import at.mightyduck.mineswooper.util.SerializableImageContainer;
 import java.awt.AWTException;
 import java.awt.MouseInfo;
 import java.awt.Point;
@@ -29,18 +26,9 @@ import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.ObjectInputStream;
 import java.io.ObjectOutputStream;
-import java.io.Serializable;
-import java.util.ArrayList;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
-import java.util.Map.Entry;
 import java.util.logging.Level;
 import java.util.logging.Logger;
-import javax.swing.Icon;
-import javax.swing.ImageIcon;
 import javax.swing.JFrame;
-import javax.swing.JOptionPane;
 
 /**
  *
