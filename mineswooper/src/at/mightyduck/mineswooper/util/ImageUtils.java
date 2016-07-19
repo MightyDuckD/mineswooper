@@ -12,6 +12,7 @@ import java.awt.image.BufferedImage;
 import java.awt.image.BufferedImageOp;
 import java.awt.image.ConvolveOp;
 import java.awt.image.Kernel;
+import java.util.function.BiFunction;
 import java.util.function.Function;
 
 /**
@@ -39,6 +40,37 @@ public class ImageUtils {
         return op.filter(img, target);
     }
 
+    private static double calc(int x, int y, double source[][], double mask[][]) {
+        double d = 0;
+        for (int i = 0; i < mask.length; i++) {
+            for (int j = 0; j < mask[i].length; j++) {
+                d += source[x + i][y + j] * mask[i][j];
+            }
+        }
+        return d;
+    }
+
+    public static void sobelOperator(double data[][], double target[][],BiFunction<Double,Double,Double> mapping) {
+        double xmask[][] = new double[][]{
+            {1, 0, -1},
+            {2, 0, -2},
+            {1, 0, -1}
+        };
+        double ymask[][] = new double[][]{
+            {1, 2, 1},
+            {0, 0, 0},
+            {-1, -2, -1}
+        };
+        for (int i = 1; i < data.length - 1; i++) {
+            for (int j = 1; j < data[i].length - 1; j++) {
+                double x = calc(i - 1, j - 1, data, xmask);
+                double y = calc(i - 1, j - 1, data, ymask);
+                target[i][j] = mapping.apply(x, y);
+            }
+            System.out.println(target[i][0]);
+        }
+    }
+
     /**
      *
      * @param color
@@ -59,7 +91,7 @@ public class ImageUtils {
     }
 
     public static BufferedImage toImage(double[][] data) {
-        return toImage(data, (val) -> new Color(val.floatValue(),val.floatValue(), val.floatValue()));
+        return toImage(data, (val) -> new Color(val.floatValue(), val.floatValue(), val.floatValue()));
     }
 
     public static BufferedImage toImage(double[][] data, Function<Double, Color> map) {

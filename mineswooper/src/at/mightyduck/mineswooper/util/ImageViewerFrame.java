@@ -68,4 +68,8 @@ public class ImageViewerFrame extends JFrame {
         this.panel.repaint();
     }
 
+    public JPanel getPanel() {
+        return panel;
+    }
+
 }
